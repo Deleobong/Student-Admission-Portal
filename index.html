@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Student Admission Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF2EC;--surface:#FFFFFF;--ink:#17262E;--muted:#5B6B72;--line:#CBD5CC;
+  --brand:#0E6B4E;--brand-ink:#FFFFFF;--accent:#F0B429;--err:#B3261E;--err-bg:#FDECEA;--ok:#0E6B4E;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1A1E;--surface:#17262C;--ink:#E7EEEA;--muted:#9BB0A8;--line:#2D4048;
+  --brand:#3FBF93;--brand-ink:#08231A;--accent:#F0B429;--err:#FF8A80;--err-bg:#3A1F1D;--ok:#3FBF93;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F1A1E;--surface:#17262C;--ink:#E7EEEA;--muted:#9BB0A8;--line:#2D4048;
+  --brand:#3FBF93;--brand-ink:#08231A;--accent:#F0B429;--err:#FF8A80;--err-bg:#3A1F1D;--ok:#3FBF93;color-scheme:dark;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:26px}
+h1{font:800 clamp(1.9rem,4vw,2.8rem)/1.05 "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 6px;letter-spacing:-.02em}
+header p{margin:0;color:var(--muted);max-width:46ch}
+.count{background:var(--ink);color:var(--bg);border-radius:14px;padding:14px 22px;display:flex;align-items:baseline;gap:12px}
+.count b{font:800 3rem/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--accent)}
+.count span{font-size:.95rem}
+.grid{display:grid;grid-template-columns:minmax(300px,400px) 1fr;gap:24px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+h2{font:600 1.2rem/1.2 "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 16px}
+.field{margin-bottom:14px}
+label{display:block;font-weight:500;font-size:.92rem;margin-bottom:4px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.field.bad input,.field.bad select{border-color:var(--err);background:var(--err-bg)}
+.field.good input,.field.good select{border-color:var(--ok)}
+.err{display:none;color:var(--err);font-size:.85rem;margin-top:4px;font-weight:500}
+.field.bad .err{display:block}
+.hint{color:var(--muted);font-size:.8rem;margin-top:4px}
+.field.bad .hint{display:none}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pw{position:relative}
+.pw input{padding-right:64px}
+.pw button{position:absolute;right:6px;top:5px;border:0;background:none;color:var(--brand);font:600 .85rem inherit;font-family:inherit;padding:6px 8px;cursor:pointer}
+.btn{width:100%;border:0;border-radius:8px;background:var(--brand);color:var(--brand-ink);font:600 1rem "IBM Plex Sans",sans-serif;padding:12px;cursor:pointer;margin-top:6px}
+.btn:hover{filter:brightness(1.08)}
+#msg{min-height:1.4em;margin:10px 0 0;font-weight:500;color:var(--ok)}
+.tablewrap{overflow-x:auto;max-width:100%}
+table{width:100%;border-collapse:collapse;font-size:.92rem;min-width:640px}
+th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:.85rem}
+.del{border:1px solid var(--line);background:none;color:var(--err);border-radius:6px;padding:4px 10px;font:inherit;font-size:.85rem;cursor:pointer}
+.empty{padding:28px 8px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Student admission portal</h1>
+      <p>Register a new student. Matriculation numbers and email addresses must be unique.</p>
+    </div>
+    <div class="count" aria-live="polite"><b id="total">0</b><span>students registered</span></div>
+  </header>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>New student</h2>
+      <form id="f" novalidate>
+        <div class="field"><label for="name">Full name</label>
+          <input id="name" autocomplete="off" placeholder="Ada Okonkwo">
+          <div class="err"></div></div>
+        <div class="field"><label for="matric">Matriculation number</label>
+          <input id="matric" autocomplete="off" placeholder="CSC/2026/014">
+          <div class="hint">6–20 characters: letters, numbers, / or -</div><div class="err"></div></div>
+        <div class="field"><label for="email">Email address</label>
+          <input id="email" type="email" autocomplete="off" placeholder="ada@example.com">
+          <div class="err"></div></div>
+        <div class="row">
+          <div class="field"><label for="phone">Phone number</label>
+            <input id="phone" inputmode="tel" autocomplete="off" placeholder="08031234567">
+            <div class="err"></div></div>
+          <div class="field"><label for="age">Age</label>
+            <input id="age" type="number" inputmode="numeric" placeholder="18">
+            <div class="err"></div></div>
+        </div>
+        <div class="field"><label for="dept">Department</label>
+          <select id="dept"><option value="">Select a department</option></select>
+          <div class="err"></div></div>
+        <div class="field"><label for="password">Password</label>
+          <div class="pw"><input id="password" type="password" autocomplete="new-password"><button type="button" id="tog" aria-label="Show password">Show</button></div>
+          <div class="hint">At least 8 characters with upper case, lower case and a number</div><div class="err"></div></div>
+        <button class="btn" type="submit">Register student</button>
+        <p id="msg" role="status"></p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Registered students</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Matric no.</th><th>Email</th><th>Phone</th><th>Age</th><th>Department</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty">No students yet. Register the first student using the form.</div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  var KEY="admission-students-v1";
+  var DEPTS=["Computer Science","Software Engineering","Electrical Engineering","Mechanical Engineering","Civil Engineering","Accounting","Business Administration","Economics","Mass Communication","Hospitality & Tourism","Law","Medicine & Surgery","Nursing"];
+  var students=load();
+  var $=function(id){return document.getElementById(id)};
+  var ids=["name","matric","email","phone","age","dept","password"];
+
+  var sel=$("dept");
+  DEPTS.forEach(function(d){var o=document.createElement("option");o.value=d;o.textContent=d;sel.appendChild(o)});
+
+  function load(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):[]}catch(e){return[]}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(students))}catch(e){}}
+  function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+  function norm(s){return s.trim().toLowerCase()}
+
+  var rules={
+    name:function(v){
+      v=v.trim();
+      if(!v)return "Enter the student’s full name.";
+      if(!/^[A-Za-z][A-Za-z'’.\- ]*$/.test(v))return "Use letters only (spaces, hyphens and apostrophes are fine).";
+      if(v.split(/\s+/).length<2)return "Enter both first name and surname.";
+      if(v.length<4)return "Name is too short.";
+      return "";
+    },
+    matric:function(v){
+      v=v.trim();
+      if(!v)return "Enter a matriculation number.";
+      if(!/^[A-Za-z0-9\/\-]{6,20}$/.test(v))return "Use 6–20 letters, numbers, / or - with no spaces.";
+      if(students.some(function(s){return norm(s.matric)===norm(v)}))return "This matriculation number is already registered.";
+      return "";
+    },
+    email:function(v){
+      v=v.trim();
+      if(!v)return "Enter an email address.";
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v))return "Enter a valid email, like name@example.com.";
+      if(students.some(function(s){return norm(s.email)===norm(v)}))return "This email address is already registered.";
+      return "";
+    },
+    phone:function(v){
+      var p=v.replace(/[\s\-()]/g,"");
+      if(!p)return "Enter a phone number.";
+      if(!/^(\+234|234|0)[789][01]\d{8}$/.test(p))return "Use a Nigerian number, e.g. 08031234567 or +2348031234567.";
+      return "";
+    },
+    age:function(v){
+      if(v==="")return "Enter the student’s age.";
+      if(!/^\d+$/.test(v))return "Age must be a whole number.";
+      var n=+v;
+      if(n<15)return "Applicants must be at least 15 years old.";
+      if(n>60)return "Age must be 60 or below.";
+      return "";
+    },
+    dept:function(v){return v?"":"Choose a department."},
+    password:function(v){
+      if(!v)return "Create a password.";
+      if(v.length<8)return "Password needs at least 8 characters.";
+      if(!/[a-z]/.test(v))return "Add a lower-case letter.";
+      if(!/[A-Z]/.test(v))return "Add an upper-case letter.";
+      if(!/\d/.test(v))return "Add a number.";
+      return "";
+    }
+  };
+
+  function check(id){
+    var el=$(id),box=el.closest(".field"),m=rules[id](el.value);
+    box.classList.toggle("bad",!!m);
+    box.classList.toggle("good",!m&&el.value!=="");
+    box.querySelector(".err").textContent=m;
+    el.setAttribute("aria-invalid",m?"true":"false");
+    return !m;
+  }
+
+  ids.forEach(function(id){
+    var el=$(id);
+    el.addEventListener("blur",function(){if(el.value!==""||el.closest(".field").classList.contains("bad"))check(id)});
+    el.addEventListener("input",function(){if(el.closest(".field").classList.contains("bad"))check(id)});
+  });
+
+  $("tog").addEventListener("click",function(){
+    var p=$("password"),show=p.type==="password";
+    p.type=show?"text":"password";
+    this.textContent=show?"Hide":"Show";
+    this.setAttribute("aria-label",show?"Hide password":"Show password");
+  });
+
+  $("f").addEventListener("submit",function(e){
+    e.preventDefault();
+    $("msg").textContent="";
+    var ok=true,first=null;
+    ids.forEach(function(id){if(!check(id)){ok=false;if(!first)first=id}});
+    if(!ok){$(first).focus();return}
+    var s={
+      name:$("name").value.trim().replace(/\s+/g," "),
+      matric:$("matric").value.trim().toUpperCase(),
+      email:$("email").value.trim().toLowerCase(),
+      phone:$("phone").value.replace(/[\s\-()]/g,""),
+      age:+$("age").value,
+      dept:$("dept").value
+    };
+    // The password is validated but never stored or displayed.
+    students.push(s);save();render();
+    $("f").reset();
+    document.querySelectorAll(".field").forEach(function(f){f.classList.remove("bad","good")});
+    $("msg").textContent=s.name+" is registered.";
+  });
+
+  $("rows").addEventListener("click",function(e){
+    var b=e.target.closest("[data-i]");
+    if(!b)return;
+    var s=students[+b.getAttribute("data-i")];
+    if(s&&confirm("Remove "+s.name+" from the register?")){
+      students.splice(+b.getAttribute("data-i"),1);save();render();
+    }
+  });
+
+  function render(){
+    $("total").textContent=students.length;
+    $("empty").style.display=students.length?"none":"block";
+    $("rows").innerHTML=students.map(function(s,i){
+      return "<tr><td>"+(i+1)+"</td><td>"+esc(s.name)+"</td><td>"+esc(s.matric)+"</td><td>"+esc(s.email)+"</td><td>"+esc(s.phone)+"</td><td>"+s.age+"</td><td>"+esc(s.dept)+"</td><td><button class=\"del\" data-i=\""+i+"\" aria-label=\"Remove "+esc(s.name)+"\">Remove</button></td></tr>";
+    }).join("");
+  }
+  render();
+})();
+</script>
+</body>
+</html>
